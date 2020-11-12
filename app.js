@@ -1,6 +1,13 @@
 const express = require('express');
 const app = express();
 
+
+//middlewares
+app.use( (req, res, next) => {
+  console.log('URL : ', req.url);
+  next();
+})
+
 app.get('/api', (req, res) => {
   res.send('Root Api')
 })
