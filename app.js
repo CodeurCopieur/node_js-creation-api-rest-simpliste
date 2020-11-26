@@ -1,4 +1,5 @@
 const express = require('express');
+const bodyPaser = require('body-parser');
 //importer les functions de reponse
 const func = require('./functions')
 const morgan = require('morgan')
@@ -26,6 +27,8 @@ const members = [
 
 //morgan
 app.use(morgan('dev'))
+app.use(express.json()) // for parsing application/json
+app.use(express.urlencoded({ extended: true })) // for parsing application/x-www-form-urlencoded
 
 //route pour  afficher un membre
 app.get('/api/v1/members/:id', (req, res) => {
@@ -40,6 +43,39 @@ app.get('/api/v1/members', (req, res) => {
     res.json(func.error('mauvaise valeur max'))
   } else {
     res.json(func.success(members))
+  }
+})
+
+
+app.post('/api/v1/members', (req, res) => {
+  if(req.body.name) {
+
+    let sameName = false
+
+    for (let index = 0; index < members.length; index++) {
+      if(members[index].name == req.body.name) {
+        sameName = true
+        break
+      }
+    }
+
+    if(sameName) {
+      res.json(func.error('name already taken'))
+    }else {
+
+      let member = {
+        id: members.length+1,
+        name: req.body.name
+      }
+      members.push(member)
+  
+      res.json(func.success(member))
+    }
+
+
+
+  } else {
+    res.json(func.error('no name value '))
   }
 })
 
