@@ -1,7 +1,7 @@
 const express = require('express');
 const bodyPaser = require('body-parser');
 //importer les functions de reponse
-const func = require('./functions')
+const {success, error} = require('./functions')
 const morgan = require('morgan')
 const app = express();
 
@@ -32,17 +32,24 @@ app.use(express.urlencoded({ extended: true })) // for parsing application/x-www
 
 //route pour  afficher un membre
 app.get('/api/v1/members/:id', (req, res) => {
-  res.json(func.success(members[(req.params.id)-1].name))
+
+  let index = getIndex(req.params.id);
+
+  if(typeof(index) == 'string') {
+    res.json(error(index))
+  } else {
+    res.json(success(members[index]))
+  }
 })
 
 //route pour afficher tous les membres ou bien choisir le nombre de membre à afficher (ex : /api/v1/members?max=2)
 app.get('/api/v1/members', (req, res) => {
   if(req.query.max != undefined && req.query.max > 0) {
-    res.json(func.success(members.slice(0, req.query.max)))
+    res.json(success(members.slice(0, req.query.max)))
   } else if(req.query.max != undefined) {
-    res.json(func.error('mauvaise valeur max'))
+    res.json(error('mauvaise valeur max'))
   } else {
-    res.json(func.success(members))
+    res.json(success(members))
   }
 })
 
@@ -60,7 +67,7 @@ app.post('/api/v1/members', (req, res) => {
     }
 
     if(sameName) {
-      res.json(func.error('name already taken'))
+      res.json(error('name already taken'))
     }else {
 
       let member = {
@@ -69,13 +76,13 @@ app.post('/api/v1/members', (req, res) => {
       }
       members.push(member)
   
-      res.json(func.success(member))
+      res.json(success(member))
     }
 
 
 
   } else {
-    res.json(func.error('no name value '))
+    res.json(error('no name value '))
   }
 })
 
@@ -86,6 +93,14 @@ app.get('/api/v1/members/:id', (req, res) => {
 app.listen(8080, () => {
   console.log('Started on port 8080!');
 })
+
+function getIndex(id) {
+  for (let i = 0; i < members.length; i++) {
+    if(members[i].id == id)
+      return i
+  }
+  return 'wrong id'
+}
 
 
 /*
